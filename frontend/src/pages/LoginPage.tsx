@@ -1,3 +1,15 @@
+/**
+ * Login page.
+ *
+ * Purpose:
+ * - Starts the Spotify OAuth flow.
+ * - Provides demo shortcuts for local exploration.
+ *
+ * Cross references:
+ * - OAuth start: src/lib/spotify-auth.ts -> redirectToSpotifyAuth()
+ * - Demo content: src/lib/demo-data.ts
+ * - Next page after login: src/pages/CallbackPage.tsx
+ */
 import React from 'react'
 import { redirectToSpotifyAuth, isSpotifyConfigured } from '@/lib/spotify-auth'
 import { useNavigate } from 'react-router-dom'
@@ -15,6 +27,7 @@ export default function LoginPage() {
   }
 
   function tryDemo(id: string) {
+    // Demo mode bypasses Spotify and jumps straight to the character page.
     localStorage.setItem('demo_mode', 'true')
     localStorage.setItem('demo_profile_id', id)
     navigate('/character')

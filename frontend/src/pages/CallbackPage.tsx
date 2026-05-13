@@ -1,3 +1,15 @@
+/**
+ * OAuth callback page.
+ *
+ * Purpose:
+ * - Reads the authorization code returned by Spotify.
+ * - Sends the code to backend/api/auth.js via src/lib/spotify-auth.ts.
+ * - Redirects to the character page after the backend stores tokens.
+ *
+ * Cross references:
+ * - Backend exchange endpoint: backend/api/auth.js
+ * - OAuth helper: src/lib/spotify-auth.ts -> handleSpotifyCallback()
+ */
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { handleSpotifyCallback } from '@/lib/spotify-auth'
@@ -7,6 +19,7 @@ export default function CallbackPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Spotify returns ?code=... after the user grants access.
     const params = new URLSearchParams(window.location.search)
     const code = params.get('code')
     if (!code) {
@@ -16,6 +29,7 @@ export default function CallbackPage() {
 
     ;(async () => {
       try {
+        // Exchange the authorization code for server-stored tokens.
         await handleSpotifyCallback(code)
         navigate('/character')
       } catch (err: any) {

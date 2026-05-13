@@ -1,5 +1,6 @@
 {
   "name": "spotify-rpg-frontend",
+  "description": "React frontend for Spotify RPG. Uses backend /api endpoints for auth, Spotify data, and generated profiles.",
   "version": "0.1.0",
   "private": true,
   "scripts": {

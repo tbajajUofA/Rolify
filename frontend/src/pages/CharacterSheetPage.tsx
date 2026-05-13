@@ -1,3 +1,17 @@
+/**
+ * Character sheet / generated profile page.
+ *
+ * Purpose:
+ * - Loads the backend-generated personality profile.
+ * - Lets the user switch between long_term, medium_term, and short_term results.
+ * - Renders demo profiles when demo mode is enabled.
+ *
+ * Cross references:
+ * - Backend profile endpoint: backend/api/character.js
+ * - Frontend API wrapper: src/lib/spotify-api.ts -> generateCharacter()
+ * - Demo data: src/lib/demo-data.ts
+ * - Logout helper: src/lib/spotify-auth.ts
+ */
 import React, { useEffect, useState } from 'react'
 import { generateCharacter, TimeRange } from '@/lib/spotify-api'
 import { DEMO_PROFILES } from '@/lib/demo-data'
@@ -11,6 +25,7 @@ export default function CharacterSheetPage() {
   const [profile, setProfile] = useState<any>(null)
 
   async function loadCharacter(range: TimeRange) {
+    // Fetch the generated profile from the backend for the selected time range.
     setLoading(true)
     setError(null)
 
@@ -27,6 +42,7 @@ export default function CharacterSheetPage() {
   }
 
   useEffect(() => {
+    // Demo mode never calls the backend profile endpoint.
     const demo = localStorage.getItem('demo_mode') === 'true'
     if (demo) {
       const id = localStorage.getItem('demo_profile_id') || 'carti'
@@ -49,6 +65,7 @@ export default function CharacterSheetPage() {
   if (error) return <main className="p-8"><p className="text-red-400">{error}</p></main>
 
   async function handleLogout() {
+    // Logout is handled server-side so the httpOnly cookies are cleared.
     await logout()
   }
 
@@ -78,6 +95,7 @@ export default function CharacterSheetPage() {
         ))}
       </div>
       {result?.demo ? (
+        // Demo mode displays a lightweight preview instead of calling backend/api/character.js.
         <p className="mt-4">Demo profile: minimal preview.</p>
       ) : (
         <div className="mt-4 space-y-3 max-w-3xl">

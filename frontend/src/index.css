@@ -1,13 +1,26 @@
+/*
+ * Global frontend styles and CSS variables.
+ *
+ * Purpose:
+ * - Declares the app-wide color tokens used by Tailwind classes and custom CSS.
+ * - Ensures the root viewport fills the screen.
+ *
+ * Cross references:
+ * - Consumed by src/main.tsx
+ * - Visual styling is most visible in src/pages/LoginPage.tsx and src/pages/CharacterSheetPage.tsx
+ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Theme tokens for the current dark RPG-style presentation. */
 :root {
   --background: 20 14.3% 4.1%;
   --foreground: 0 0% 95%;
   --primary: 142 70% 45%;
 }
 
+/* Ensure the root app fills the viewport and inherits the global theme colors. */
 html, body, #root {
   height: 100%;
   background-color: hsl(var(--background));
