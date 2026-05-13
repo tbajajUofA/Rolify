@@ -1,20 +1,31 @@
-# Rolify / Spotify RPG - Project Documentation
+# Rolify / Spotify RPG - Agent Guide
 
 ## 🎯 Project Overview
 
-**Rolify** (also called "Spotify RPG") is a web application that transforms your Spotify listening history into a playable RPG character. The app analyzes your music data and generates a unique character with stats, class, level, achievements, and daily quests based on your listening patterns.
+**Rolify** is a Spotify-to-RPG app. It turns listening history into a generated personality profile with stats, archetype, and a short verdict.
 
-**Core Concept**: Your music taste becomes your character stats and class.
+Current direction:
+- public REST endpoints live in `backend/api/`
+- reusable backend logic lives in `backend/services/`
+- the frontend calls backend endpoints instead of hitting Spotify directly
+- the character page now requests generated profiles for `long_term`, `medium_term`, and `short_term`
 
 ---
 
 ## 📁 Folder Structure
 
 ```
-/home/tj/Rolify/
-├── backend/                    # Express.js server (Node.js)
-│   ├── package.json           # Backend dependencies (express, dotenv, cookie-parser)
-│   └── server.js              # Main backend server - handles Spotify OAuth & API requests
+Rolify/
+├── backend/                    # Express.js backend
+│   ├── server.js              # Entry point that mounts API routers
+│   ├── api/                   # Public HTTP endpoints
+│   │   ├── auth.js            # /api/auth/exchange, /refresh, /logout
+│   │   ├── spotify.js         # Spotify data endpoints used by the frontend and character flow
+│   │   └── character.js       # Gemini-backed profile generation endpoint
+│   └── services/              # Internal backend-only logic
+│       ├── spotify.js         # Spotify request helpers and response shaping
+│       ├── gemini.js          # Gemini request + JSON parsing helpers
+│       └── character.js       # Orchestrates Spotify + Gemini into one profile
 ├── frontend/                   # React + TypeScript + Vite frontend
 │   ├── package.json           # Frontend dependencies (React, Vite, Tailwind, TypeScript)
 │   ├── tsconfig.json          # TypeScript configuration
@@ -48,10 +59,10 @@
 ### Technology Stack
 
 **Backend:**
-- Express.js (HTTP server)
-- Node.js (18.0.0+)
-- Spotify Web API
-- OAuth 2.0 PKCE Flow
+- Express.js HTTP server
+- Spotify OAuth PKCE exchange and refresh flow
+- Spotify Web API requests handled server-side
+- Gemini personality generation handled server-side
 - HTTP-only cookies for token storage
 
 **Frontend:**
@@ -62,56 +73,44 @@
 - Tailwind CSS 3.4.0 (styling)
 
 ### Project Type
-- **Monorepo** structure with separate backend and frontend
-- Frontend runs on `http://localhost:5173` (Vite dev server)
-- Backend runs on `http://localhost:3000` (Express server)
-- Both can run together with `npm run dev` (uses concurrently)
+- Monorepo with separate frontend and backend
+- Frontend runs on `http://localhost:5173` and proxies `/api` to the backend
+- Backend runs on `http://localhost:3000`
+- Root `npm run dev` starts both sides together
 
 ---
 
 ## 🔑 Key Features
 
 ### 1. **Spotify OAuth Authentication**
-   - **Flow**: OAuth 2.0 with PKCE (Proof Key for Code Exchange)
-   - **Location**: [backend/server.js](backend/server.js), [frontend/src/lib/spotify-auth.ts](frontend/src/lib/spotify-auth.ts)
-   - **Endpoint**: `/api/auth/exchange` (POST) - exchanges auth code for tokens
-   - **Tokens**: Stored as HTTP-only cookies for security
+  - **Flow**: OAuth 2.0 with PKCE (Proof Key for Code Exchange)
+  - **Location**: [backend/api/auth.js](backend/api/auth.js), [frontend/src/lib/spotify-auth.ts](frontend/src/lib/spotify-auth.ts)
+  - **Endpoints**: `/api/auth/exchange`, `/api/auth/refresh`, `/api/auth/logout`
+  - **Tokens**: Stored as HTTP-only cookies
 
-### 2. **Character Generation Algorithm**
-   - **Location**: [frontend/src/lib/character-generator.ts](frontend/src/lib/character-generator.ts)
-   - **Input**: User's top tracks + audio features from Spotify API
-   - **Output**: RPG character with:
-     - **Six Core Stats** (0-100):
-       - `Strength`: Based on audio energy
-       - `Charisma`: Based on valence (happiness/positivity of music)
-       - `Agility`: Based on danceability
-       - `Wisdom`: Based on acousticness
-       - `Speed`: Based on tempo
-       - `Focus`: Based on instrumentalness
-     - **Character Class**: One of 9 classes (Berserker, Sage, Bard, Rogue, Mystic, Enchanter, Ranger, Techromancer, Wildcard)
-     - **Level**: Calculated from listening diversity
-     - **Achievements**: Badges based on listening patterns
-     - **Daily Quests**: Three personalized quests with Spotify recommendations
+### 2. **Character Generation Pipeline**
+   - **Location**: [backend/api/character.js](backend/api/character.js), [backend/services/character.js](backend/services/character.js)
+   - **Input**: `time_range` plus Spotify data fetched server-side
+   - **Output**: Gemini-generated profile with:
+     - archetype
+     - 5 personality stats
+     - verdict
+     - source data bundle for debugging
 
 ### 3. **Spotify API Integration**
-   - **Location**: [frontend/src/lib/spotify-api.ts](frontend/src/lib/spotify-api.ts)
-   - **Key Endpoints Used**:
-     - `GET /v1/me` - Get current user profile
-     - `GET /v1/me/top/tracks` - Get user's top tracks
-     - `GET /v1/me/top/artists` - Get user's top artists
-     - `GET /v1/audio-features/{id}` - Get audio features for tracks
-     - `GET /v1/recommendations` - Get music recommendations
+   - **Location**: [backend/api/spotify.js](backend/api/spotify.js), [backend/services/spotify.js](backend/services/spotify.js)
+   - **Key Endpoints**:
+     - `GET /api/spotify/me`
+     - `GET /api/spotify/top-tracks?time_range=...`
+     - `GET /api/spotify/top-artists?time_range=...`
+     - `GET /api/spotify/audio-features?time_range=...`
+     - `GET /api/spotify/followed-artists`
+     - `GET /api/spotify/playlists`
 
 ### 4. **Pages & Routes**
-   - **LoginPage**: Initial Spotify authentication screen
-   - **CallbackPage**: Handles OAuth redirect after Spotify login
-   - **CharacterSheetPage**: Main dashboard showing:
-     - Character card with avatar, name, class, level
-     - Six stats (Strength, Charisma, Agility, Wisdom, Speed, Focus)
-     - Music insights (genres, artists, average tempo, etc.)
-     - Daily quests
-     - Achievements
-     - Export character sheet as PNG
+  - **LoginPage**: Initial Spotify authentication screen and demo entry points
+  - **CallbackPage**: Handles OAuth redirect after Spotify login
+  - **CharacterSheetPage**: Requests backend-generated character profiles and lets the user switch time ranges
 
 ### 5. **Demo Mode**
    - **Location**: [frontend/src/lib/demo-data.ts](frontend/src/lib/demo-data.ts)
@@ -133,9 +132,10 @@
 5. **Spotify redirects back to CallbackPage** with authorization code
 6. **CallbackPage sends code + code_verifier to backend** (`POST /api/auth/exchange`)
 7. **Backend exchanges code for access_token + refresh_token**
-8. **Backend stores tokens in HTTP-only cookies** (secure, not accessible to JavaScript)
+8. **Backend stores tokens in HTTP-only cookies**
 9. **Frontend redirected to CharacterSheetPage**
-10. **Frontend can now make Spotify API requests** (tokens in cookies automatically sent)
+10. **CharacterSheetPage calls `POST /api/character/generate` with a time range**
+11. **Backend fetches Spotify data, builds a Gemini prompt, and returns the generated profile**
 
 ---
 
@@ -157,7 +157,7 @@ SpotifyImage         // { url, height, width }
 
 ### Install Dependencies
 ```bash
-cd /home/tj/Rolify
+cd <repo-root>
 npm install              # Install root dependencies
 npm install --prefix backend
 npm install --prefix frontend
@@ -182,7 +182,10 @@ npm run preview          # Preview production build
 **Backend** (`.env`):
 ```
 SPOTIFY_CLIENT_ID=your_client_id
+SPOTIFY_CLIENT_SECRET=your_client_secret
 SPOTIFY_REDIRECT_URI=http://localhost:5173/callback
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-1.5-flash
 PORT=3000
 NODE_ENV=development
 ```
@@ -191,6 +194,8 @@ NODE_ENV=development
 ```
 VITE_SPOTIFY_CLIENT_ID=your_client_id
 VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173/callback
+# Optional if the frontend ever needs to call the backend from a different origin
+VITE_API_BASE_URL=http://localhost:3000
 ```
 
 ---
@@ -200,7 +205,7 @@ VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173/callback
 - **CSS Framework**: Tailwind CSS (utility-first)
 - **Global Styles**: [frontend/src/index.css](frontend/src/index.css)
 - **Config**: [frontend/tailwind.config.js](frontend/tailwind.config.js)
-- **Design System**: Modern RPG-themed card-based UI with gradient backgrounds, shadows, and smooth animations
+- **Current UI Direction**: simple card-based layout with backend-generated stats and a time-range selector
 
 ---
 
@@ -208,9 +213,15 @@ VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173/callback
 
 | File | Purpose |
 |------|---------|
-| [backend/server.js](backend/server.js) | Express server, OAuth exchange endpoint, Spotify API proxy |
+| [backend/server.js](backend/server.js) | Express server that mounts API routers |
+| [backend/api/auth.js](backend/api/auth.js) | OAuth exchange, refresh, logout |
+| [backend/api/spotify.js](backend/api/spotify.js) | Spotify REST endpoints for the app |
+| [backend/api/character.js](backend/api/character.js) | Gemini personality generation endpoint |
+| [backend/services/spotify.js](backend/services/spotify.js) | Internal Spotify request helpers |
+| [backend/services/gemini.js](backend/services/gemini.js) | Internal Gemini request/parsing helpers |
+| [backend/services/character.js](backend/services/character.js) | Orchestrates Spotify + Gemini into one profile |
 | [frontend/src/App.tsx](frontend/src/App.tsx) | Main React component, routing setup |
-| [frontend/src/lib/character-generator.ts](frontend/src/lib/character-generator.ts) | Algorithm to generate RPG stats from music data |
+| [frontend/src/lib/character-generator.ts](frontend/src/lib/character-generator.ts) | Legacy local stat helpers; backend now owns generation |
 | [frontend/src/lib/spotify-auth.ts](frontend/src/lib/spotify-auth.ts) | OAuth 2.0 PKCE implementation |
 | [frontend/src/lib/spotify-api.ts](frontend/src/lib/spotify-api.ts) | Spotify API wrapper functions |
 | [frontend/src/lib/demo-data.ts](frontend/src/lib/demo-data.ts) | Pre-built demo characters |
@@ -223,34 +234,32 @@ VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173/callback
 
 ## 📝 Common Tasks for Future Agents
 
-### Add a New Character Class
-- Edit [frontend/src/lib/character-generator.ts](frontend/src/lib/character-generator.ts)
-- Add class name to the 9 existing classes
-- Define stat thresholds that determine which class a character gets
-
-### Modify RPG Stats Calculation
-- Edit [frontend/src/lib/character-generator.ts](frontend/src/lib/character-generator.ts)
-- Adjust how audio features (energy, valence, danceability, etc.) map to stats
-- Consider the range (0-100) and weighting logic
+### Adjust Character Generation
+- Edit [backend/services/character.js](backend/services/character.js)
+- Update the prompt, fallback stats, or time-range handling
+- If the Gemini response shape changes, update [backend/services/gemini.js](backend/services/gemini.js)
 
 ### Add Demo Characters
 - Edit [frontend/src/lib/demo-data.ts](frontend/src/lib/demo-data.ts)
 - Create new pre-built character profile objects
 
 ### Change UI Design/Components
-- Edit [frontend/src/pages/CharacterSheetPage.tsx](frontend/src/pages/CharacterSheetPage.tsx) for character display
+- Edit [frontend/src/pages/CharacterSheetPage.tsx](frontend/src/pages/CharacterSheetPage.tsx) for generated profile display and time-range controls
 - Edit [frontend/src/pages/LoginPage.tsx](frontend/src/pages/LoginPage.tsx) for login screen
 - Update Tailwind classes in these files
 
 ### Debug API Issues
-- Check [backend/server.js](backend/server.js) for endpoint issues
+- Check [backend/server.js](backend/server.js) for router mounting
+- Check [backend/api/auth.js](backend/api/auth.js) for token flow
+- Check [backend/api/spotify.js](backend/api/spotify.js) for Spotify response shapes
+- Check [backend/api/character.js](backend/api/character.js) and [backend/services/character.js](backend/services/character.js) for profile generation
 - Check [frontend/src/lib/spotify-api.ts](frontend/src/lib/spotify-api.ts) for API call logic
 - Verify environment variables are set correctly
 
 ### Add New Spotify Data
-- Extend API calls in [frontend/src/lib/spotify-api.ts](frontend/src/lib/spotify-api.ts)
+- Extend API calls in [backend/services/spotify.js](backend/services/spotify.js)
 - Update TypeScript interfaces in [frontend/src/types/spotify.ts](frontend/src/types/spotify.ts)
-- Integrate new data into character generation in [frontend/src/lib/character-generator.ts](frontend/src/lib/character-generator.ts)
+- Integrate new data into character generation in [backend/services/character.js](backend/services/character.js)
 
 ---
 
@@ -259,6 +268,7 @@ VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173/callback
 - **Tokens**: Stored in HTTP-only cookies (secure, not exposed to JavaScript)
 - **PKCE Flow**: Prevents authorization code interception attacks
 - **Same-Site Cookies**: Protects against CSRF attacks
+- **Gemini API Key**: Stays on the backend only
 - **Production**: Uses secure cookies with HTTPS only when `NODE_ENV=production`
 
 ---
@@ -276,14 +286,13 @@ VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173/callback
 
 ## 🎯 Next Steps for Agents
 
-1. **Understand the authentication flow** - How users log in via Spotify
-2. **Review character generation logic** - How stats and classes are calculated
-3. **Explore the page components** - UI structure for each section
-4. **Check the type definitions** - Understand data structures
-5. **Locate the specific file** you need to edit based on your task
+1. **Check whether the task is backend or frontend** before editing anything.
+2. **Use `backend/api/` for HTTP route changes** and `backend/services/` for reusable logic.
+3. **Use `frontend/src/lib/spotify-api.ts`** for client fetch wrappers only.
+4. **Use `backend/services/character.js`** if the generated personality rules need to change.
+5. **Use `frontend/src/pages/CharacterSheetPage.tsx`** if the UI needs to show more or less of the generated profile.
 
 ---
 
 *Last Updated: May 12, 2026*
 *Project: Rolify / Spotify RPG*
-*Contact: Use this document for project navigation and understanding*
