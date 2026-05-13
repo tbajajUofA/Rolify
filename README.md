@@ -54,43 +54,70 @@ Spotify RPG is a web application that transforms your Spotify listening data int
 - **Spotify Account**: Free or Premium (required for real data)
 - **Spotify Developer Account**: Required for API credentials (optional for demo mode)
 
-### Step-by-Step Setup
+### Quick Start (Fresh Clone)
 
-#### 1. Clone and Install
+Copy and paste these commands in order.
+
+#### 1. Clone and enter the repo
 
 ```bash
-git clone https://github.com/yourusername/spotify-rpg.git
-cd spotify-rpg
+git clone <your-repo-url>
+cd Rolify
+```
+
+#### 2. Install dependencies
+
+```bash
 npm install
+npm install --prefix backend
+npm install --prefix frontend
 ```
 
-#### 2. Set Up Spotify API Credentials (Optional)
-
-1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
-2. Click "Create App" and fill in:
-	 - **Redirect URI**: `http://localhost:5173/callback`
-	 - **API**: Select "Web API"
-3. Copy your **Client ID**
-
-#### 3. Configure Environment Variables
+#### 3. Create env files from templates
 
 ```bash
-cp .env.example .env
+cp .env.example backend/.env
+cp frontend/.env.example frontend/.env.local
 ```
 
-Edit `.env`:
+#### 4. Fill required env values
+
+Edit `backend/.env`:
 
 ```env
-VITE_SPOTIFY_CLIENT_ID=your_client_id_here
+SPOTIFY_CLIENT_ID=your_spotify_client_id
+SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
+SPOTIFY_REDIRECT_URI=http://localhost:5173/callback
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+```
+
+Edit `frontend/.env.local`:
+
+```env
+VITE_SPOTIFY_CLIENT_ID=your_spotify_client_id
 VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173/callback
 ```
 
-#### 4. Start Dev Server
+#### 5. Run the project
 
 ```bash
-npm run dev   # http://localhost:5173
-npm run build # Production build
+npm run dev
 ```
+
+Useful optional commands:
+
+```bash
+npm run dev:backend
+npm run dev:frontend
+npm run build
+npm run preview
+```
+
+Notes:
+- Frontend runs on `http://localhost:5173`.
+- Backend runs on `http://localhost:3000`.
+- Demo mode works without Spotify auth, but real profile generation needs valid API credentials.
 
 ---
 
