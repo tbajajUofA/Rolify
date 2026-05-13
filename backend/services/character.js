@@ -1,3 +1,18 @@
+/**
+ * Character orchestration service.
+ *
+ * Purpose:
+ * - Collect all Spotify data needed to describe the listener.
+ * - Build the Gemini prompt.
+ * - Provide fallback output if Gemini fails.
+ *
+ * Flow:
+ * 1. backend/api/character.js calls generateCharacterProfile().
+ * 2. This service fetches Spotify profile, top tracks, top artists, followed artists, playlists, and audio features.
+ * 3. It builds a prompt and sends it to backend/services/gemini.js.
+ * 4. It returns the final profile payload to the route handler.
+ */
+
 const {
   getUserProfile,
   getTopTracks,
@@ -14,15 +29,18 @@ const TIME_RANGE_LABELS = {
   short_term: '4 Weeks'
 }
 
+// Keep the time range stable even if the caller sends an invalid value.
 function normalizeTimeRange(timeRange) {
   return TIME_RANGE_LABELS[timeRange] ? timeRange : 'medium_term'
 }
 
 function buildPrompt({ timeRange, user, topTracks, topArtists, audioFeatures, followedArtists, playlists }) {
+  // Render the top tracks list into prompt-friendly lines.
   const trackLines = topTracks.tracks
     .map((track, index) => `${index + 1}. ${track.name} - ${(track.artists || []).map((artist) => artist.name).join(', ')} (popularity: ${track.popularity ?? 'n/a'})`)
     .join('\n')
 
+  // Render the top artists list into prompt-friendly lines.
   const artistLines = topArtists.artists
     .map(
       (artist, index) =>
@@ -30,10 +48,12 @@ function buildPrompt({ timeRange, user, topTracks, topArtists, audioFeatures, fo
     )
     .join('\n')
 
+  // This summary object is why the route returns averages instead of only raw per-track features.
   const averages = audioFeatures.averages || {}
   const playlistNames = playlists.playlists.length ? playlists.playlists.map((playlist) => `"${playlist}"`).join(', ') : 'none'
   const followedNames = followedArtists.artists.length ? followedArtists.artists.slice(0, 10).map((artist) => artist.name).join(', ') : 'none'
 
+  // The prompt intentionally constrains the model to one JSON object.
   return `You are a brutally honest music personality analyst.
 
 TIME PERIOD: ${TIME_RANGE_LABELS[timeRange]}
@@ -77,12 +97,14 @@ Rules:
 }
 
 function clampScore(value) {
+  // Normalize model output to a valid 0-100 integer.
   const score = Number(value)
   if (Number.isNaN(score)) return 0
   return Math.max(0, Math.min(100, Math.round(score)))
 }
 
 function normalizeStats(stats, fallbackStats) {
+  // Make sure the returned array always has exactly five items.
   const source = Array.isArray(stats) ? stats.slice(0, 5) : []
   while (source.length < 5) {
     source.push(fallbackStats[source.length])
@@ -96,6 +118,7 @@ function normalizeStats(stats, fallbackStats) {
 }
 
 function buildFallbackStats(audioFeatures, topArtists) {
+  // Use the Spotify averages to generate a deterministic fallback if Gemini fails.
   const averages = audioFeatures.averages || {}
   const popCount = topArtists.artists.filter((artist) => (artist.genres || []).some((genre) => /pop/i.test(genre))).length
 
@@ -129,8 +152,10 @@ function buildFallbackStats(audioFeatures, topArtists) {
 }
 
 async function generateCharacterProfile(accessToken, requestedTimeRange = 'medium_term') {
+  // Guard the input so the UI can only request supported ranges.
   const timeRange = normalizeTimeRange(requestedTimeRange)
 
+  // Gather all source data in parallel except audio features, which depend on top tracks.
   const [user, topTracks, topArtists, followedArtists, playlists] = await Promise.all([
     getUserProfile(accessToken),
     getTopTracks(accessToken, { time_range: timeRange, limit: 10 }),
@@ -139,19 +164,23 @@ async function generateCharacterProfile(accessToken, requestedTimeRange = 'mediu
     getPlaylists(accessToken)
   ])
 
+  // Fetch audio features for the current top tracks.
   const audioFeatures = await getAudioFeatures(accessToken, {
     ids: topTracks.tracks.map((track) => track.id),
     time_range: timeRange,
     limit: 10
   })
 
+  // Build a safe fallback before calling Gemini so the route still works if the model fails.
   const fallbackStats = buildFallbackStats(audioFeatures, topArtists)
   const prompt = buildPrompt({ timeRange, user, topTracks, topArtists, audioFeatures, followedArtists, playlists })
 
   let profile
   try {
+    // Gemini should return the final personality profile.
     profile = await generateGeminiJson(prompt)
   } catch (error) {
+    // Fallback keeps the endpoint usable even when the model call fails.
     profile = {
       archetype: 'Data-Driven Music Gremlin',
       stats: fallbackStats,
@@ -160,6 +189,7 @@ async function generateCharacterProfile(accessToken, requestedTimeRange = 'mediu
   }
 
   return {
+    // Return the raw source bundle for debugging and future cross-referencing.
     user,
     time_range: timeRange,
     range_label: TIME_RANGE_LABELS[timeRange],

@@ -1,5 +1,6 @@
 {
   "name": "spotify-rpg-backend",
+  "description": "Express backend for Spotify RPG: auth, Spotify data, and Gemini character generation.",
   "version": "0.1.0",
   "private": true,
   "scripts": {
