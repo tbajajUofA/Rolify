@@ -4,12 +4,12 @@
  * Purpose:
  * - Keeps the UI code away from direct fetch calls to Spotify.
  * - Uses the backend as the single source of truth for Spotify and Gemini data.
- * - Automatically retries once after a 401 by calling backend/api/auth.js -> /api/auth/refresh.
+ * - Automatically retries once after a 401 by calling backend/api/auth.ts -> /api/auth/refresh.
  *
  * Cross references:
- * - backend/api/auth.js for token refresh
- * - backend/api/spotify.js for Spotify data endpoints
- * - backend/api/character.js for generated profile responses
+ * - backend/api/auth.ts for token refresh
+ * - backend/api/spotify.ts for Spotify data endpoints
+ * - backend/api/character.ts for generated profile responses
  * - src/pages/CharacterSheetPage.tsx for the consumer UI
  */
 export type TimeRange = 'long_term' | 'medium_term' | 'short_term'
@@ -41,38 +41,38 @@ async function apiFetch(input: RequestInfo, init?: RequestInit, retry = true) {
 }
 
 export async function getUserProfile() {
-  // backend/api/spotify.js -> GET /api/spotify/me
+  // backend/api/spotify.ts -> GET /api/spotify/me
   return apiFetch('/api/spotify/me').then((d: any) => d.user || d)
 }
 
 export async function getTopTracks(limit = 10, time_range: TimeRange = 'medium_term') {
-  // backend/api/spotify.js -> GET /api/spotify/top-tracks
+  // backend/api/spotify.ts -> GET /api/spotify/top-tracks
   return apiFetch(`/api/spotify/top-tracks?limit=${limit}&time_range=${time_range}`).then((d: any) => d.tracks || d.items || d)
 }
 
 export async function getTopArtists(limit = 5, time_range: TimeRange = 'medium_term') {
-  // backend/api/spotify.js -> GET /api/spotify/top-artists
+  // backend/api/spotify.ts -> GET /api/spotify/top-artists
   return apiFetch(`/api/spotify/top-artists?limit=${limit}&time_range=${time_range}`).then((d: any) => d.artists || d.items || d)
 }
 
 export async function getAudioFeatures(ids: string[], time_range: TimeRange = 'medium_term') {
-  // backend/api/spotify.js -> GET /api/spotify/audio-features
+  // backend/api/spotify.ts -> GET /api/spotify/audio-features
   const query = ids.length ? `?ids=${ids.join(',')}&time_range=${time_range}` : `?time_range=${time_range}`
   return apiFetch(`/api/spotify/audio-features${query}`).then((d: any) => d.tracks || d.audio_features || d)
 }
 
 export async function getFollowedArtists() {
-  // backend/api/spotify.js -> GET /api/spotify/followed-artists
+  // backend/api/spotify.ts -> GET /api/spotify/followed-artists
   return apiFetch('/api/spotify/followed-artists').then((d: any) => d.artists || d)
 }
 
 export async function getPlaylists() {
-  // backend/api/spotify.js -> GET /api/spotify/playlists
+  // backend/api/spotify.ts -> GET /api/spotify/playlists
   return apiFetch('/api/spotify/playlists').then((d: any) => d.playlists || d)
 }
 
 export async function generateCharacter(time_range: TimeRange = 'medium_term') {
-  // backend/api/character.js -> POST /api/character/generate
+  // backend/api/character.ts -> POST /api/character/generate
   return apiFetch('/api/character/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

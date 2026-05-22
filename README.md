@@ -139,7 +139,7 @@ spotify-rpg/
 │   └── index.css
 ├── .env.example
 ├── package.json
-├── tailwind.config.js
+├── tailwind.config.ts
 ├── tsconfig.json
 └── vite.config.ts
 ```
@@ -346,7 +346,7 @@ Never commit `.env` to version control. Update redirect URI for production deplo
 
 ### Other Config Files
 
-- **`tailwind.config.js`**: Maps CSS custom properties to Tailwind theme, adds `tailwindcss-animate` plugin
+- **`tailwind.config.ts`**: Tailwind CSS configuration for scanning the Vite app
 - **`tsconfig.json`**: `strict: true`, `@/` path alias → `./src`, `jsx: \"react-jsx\"`
 - **`vite.config.ts`**: React plugin, `@` → `./src` alias, default port 5173
 

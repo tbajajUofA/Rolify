@@ -230,12 +230,20 @@ export async function getAudioFeatures(
     }))
 
   // Compute averages so the character layer can reference one summary object.
-  const numericFields = ['energy', 'valence', 'danceability', 'acousticness', 'instrumentalness', 'speechiness', 'tempo']
+  const numericFields: Array<keyof Omit<AudioFeatureSummary, 'id'>> = [
+    'energy',
+    'valence',
+    'danceability',
+    'acousticness',
+    'instrumentalness',
+    'speechiness',
+    'tempo'
+  ]
   const averages = tracks.length
     ? Object.fromEntries(
         numericFields.map((field) => [
           field,
-          Number((tracks.reduce((sum, track) => sum + (Number((track as Record<string, number>)[field]) || 0), 0) / tracks.length).toFixed(field === 'tempo' ? 0 : 3))
+          Number((tracks.reduce((sum, track) => sum + (Number(track[field]) || 0), 0) / tracks.length).toFixed(field === 'tempo' ? 0 : 3))
         ])
       )
     : null

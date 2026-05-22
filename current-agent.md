@@ -17,19 +17,19 @@ Current direction:
 ```
 Rolify/
 ├── backend/                    # Express.js backend
-│   ├── server.js              # Entry point that mounts API routers
+│   ├── server.ts              # Entry point that mounts API routers
 │   ├── api/                   # Public HTTP endpoints
-│   │   ├── auth.js            # /api/auth/exchange, /refresh, /logout
-│   │   ├── spotify.js         # Spotify data endpoints used by the frontend and character flow
-│   │   └── character.js       # Gemini-backed profile generation endpoint
+│   │   ├── auth.ts            # /api/auth/exchange, /refresh, /logout
+│   │   ├── spotify.ts         # Spotify data endpoints used by the frontend and character flow
+│   │   └── character.ts       # Gemini-backed profile generation endpoint
 │   └── services/              # Internal backend-only logic
-│       ├── spotify.js         # Spotify request helpers and response shaping
-│       ├── gemini.js          # Gemini request + JSON parsing helpers
-│       └── character.js       # Orchestrates Spotify + Gemini into one profile
+│       ├── spotify.ts         # Spotify request helpers and response shaping
+│       ├── gemini.ts          # Gemini request + JSON parsing helpers
+│       └── character.ts       # Orchestrates Spotify + Gemini into one profile
 ├── frontend/                   # React + TypeScript + Vite frontend
 │   ├── package.json           # Frontend dependencies (React, Vite, Tailwind, TypeScript)
 │   ├── tsconfig.json          # TypeScript configuration
-│   ├── tailwind.config.js      # Tailwind CSS configuration
+│   ├── tailwind.config.ts      # Tailwind CSS configuration
 │   ├── vite.config.ts          # Vite bundler configuration
 │   ├── index.html             # HTML entry point
 │   └── src/
@@ -84,12 +84,12 @@ Rolify/
 
 ### 1. **Spotify OAuth Authentication**
   - **Flow**: OAuth 2.0 with PKCE (Proof Key for Code Exchange)
-  - **Location**: [backend/api/auth.js](backend/api/auth.js), [frontend/src/lib/spotify-auth.ts](frontend/src/lib/spotify-auth.ts)
+  - **Location**: [backend/api/auth.ts](backend/api/auth.ts), [frontend/src/lib/spotify-auth.ts](frontend/src/lib/spotify-auth.ts)
   - **Endpoints**: `/api/auth/exchange`, `/api/auth/refresh`, `/api/auth/logout`
   - **Tokens**: Stored as HTTP-only cookies
 
 ### 2. **Character Generation Pipeline**
-   - **Location**: [backend/api/character.js](backend/api/character.js), [backend/services/character.js](backend/services/character.js)
+   - **Location**: [backend/api/character.ts](backend/api/character.ts), [backend/services/character.ts](backend/services/character.ts)
    - **Input**: `time_range` plus Spotify data fetched server-side
    - **Output**: Gemini-generated profile with:
      - archetype
@@ -98,7 +98,7 @@ Rolify/
      - source data bundle for debugging
 
 ### 3. **Spotify API Integration**
-   - **Location**: [backend/api/spotify.js](backend/api/spotify.js), [backend/services/spotify.js](backend/services/spotify.js)
+   - **Location**: [backend/api/spotify.ts](backend/api/spotify.ts), [backend/services/spotify.ts](backend/services/spotify.ts)
    - **Key Endpoints**:
      - `GET /api/spotify/me`
      - `GET /api/spotify/top-tracks?time_range=...`
@@ -204,7 +204,7 @@ VITE_API_BASE_URL=http://localhost:3000
 
 - **CSS Framework**: Tailwind CSS (utility-first)
 - **Global Styles**: [frontend/src/index.css](frontend/src/index.css)
-- **Config**: [frontend/tailwind.config.js](frontend/tailwind.config.js)
+- **Config**: [frontend/tailwind.config.ts](frontend/tailwind.config.ts)
 - **Current UI Direction**: simple card-based layout with backend-generated stats and a time-range selector
 
 ---
@@ -213,13 +213,13 @@ VITE_API_BASE_URL=http://localhost:3000
 
 | File | Purpose |
 |------|---------|
-| [backend/server.js](backend/server.js) | Express server that mounts API routers |
-| [backend/api/auth.js](backend/api/auth.js) | OAuth exchange, refresh, logout |
-| [backend/api/spotify.js](backend/api/spotify.js) | Spotify REST endpoints for the app |
-| [backend/api/character.js](backend/api/character.js) | Gemini personality generation endpoint |
-| [backend/services/spotify.js](backend/services/spotify.js) | Internal Spotify request helpers |
-| [backend/services/gemini.js](backend/services/gemini.js) | Internal Gemini request/parsing helpers |
-| [backend/services/character.js](backend/services/character.js) | Orchestrates Spotify + Gemini into one profile |
+| [backend/server.ts](backend/server.ts) | Express server that mounts API routers |
+| [backend/api/auth.ts](backend/api/auth.ts) | OAuth exchange, refresh, logout |
+| [backend/api/spotify.ts](backend/api/spotify.ts) | Spotify REST endpoints for the app |
+| [backend/api/character.ts](backend/api/character.ts) | Gemini personality generation endpoint |
+| [backend/services/spotify.ts](backend/services/spotify.ts) | Internal Spotify request helpers |
+| [backend/services/gemini.ts](backend/services/gemini.ts) | Internal Gemini request/parsing helpers |
+| [backend/services/character.ts](backend/services/character.ts) | Orchestrates Spotify + Gemini into one profile |
 | [frontend/src/App.tsx](frontend/src/App.tsx) | Main React component, routing setup |
 | [frontend/src/lib/character-generator.ts](frontend/src/lib/character-generator.ts) | Legacy local stat helpers; backend now owns generation |
 | [frontend/src/lib/spotify-auth.ts](frontend/src/lib/spotify-auth.ts) | OAuth 2.0 PKCE implementation |
@@ -235,9 +235,9 @@ VITE_API_BASE_URL=http://localhost:3000
 ## 📝 Common Tasks for Future Agents
 
 ### Adjust Character Generation
-- Edit [backend/services/character.js](backend/services/character.js)
+- Edit [backend/services/character.ts](backend/services/character.ts)
 - Update the prompt, fallback stats, or time-range handling
-- If the Gemini response shape changes, update [backend/services/gemini.js](backend/services/gemini.js)
+- If the Gemini response shape changes, update [backend/services/gemini.ts](backend/services/gemini.ts)
 
 ### Add Demo Characters
 - Edit [frontend/src/lib/demo-data.ts](frontend/src/lib/demo-data.ts)
@@ -249,17 +249,17 @@ VITE_API_BASE_URL=http://localhost:3000
 - Update Tailwind classes in these files
 
 ### Debug API Issues
-- Check [backend/server.js](backend/server.js) for router mounting
-- Check [backend/api/auth.js](backend/api/auth.js) for token flow
-- Check [backend/api/spotify.js](backend/api/spotify.js) for Spotify response shapes
-- Check [backend/api/character.js](backend/api/character.js) and [backend/services/character.js](backend/services/character.js) for profile generation
+- Check [backend/server.ts](backend/server.ts) for router mounting
+- Check [backend/api/auth.ts](backend/api/auth.ts) for token flow
+- Check [backend/api/spotify.ts](backend/api/spotify.ts) for Spotify response shapes
+- Check [backend/api/character.ts](backend/api/character.ts) and [backend/services/character.ts](backend/services/character.ts) for profile generation
 - Check [frontend/src/lib/spotify-api.ts](frontend/src/lib/spotify-api.ts) for API call logic
 - Verify environment variables are set correctly
 
 ### Add New Spotify Data
-- Extend API calls in [backend/services/spotify.js](backend/services/spotify.js)
+- Extend API calls in [backend/services/spotify.ts](backend/services/spotify.ts)
 - Update TypeScript interfaces in [frontend/src/types/spotify.ts](frontend/src/types/spotify.ts)
-- Integrate new data into character generation in [backend/services/character.js](backend/services/character.js)
+- Integrate new data into character generation in [backend/services/character.ts](backend/services/character.ts)
 
 ---
 
@@ -289,7 +289,7 @@ VITE_API_BASE_URL=http://localhost:3000
 1. **Check whether the task is backend or frontend** before editing anything.
 2. **Use `backend/api/` for HTTP route changes** and `backend/services/` for reusable logic.
 3. **Use `frontend/src/lib/spotify-api.ts`** for client fetch wrappers only.
-4. **Use `backend/services/character.js`** if the generated personality rules need to change.
+4. **Use `backend/services/character.ts`** if the generated personality rules need to change.
 5. **Use `frontend/src/pages/CharacterSheetPage.tsx`** if the UI needs to show more or less of the generated profile.
 
 ---

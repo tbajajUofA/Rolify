@@ -7,7 +7,7 @@
  * - Renders demo profiles when demo mode is enabled.
  *
  * Cross references:
- * - Backend profile endpoint: backend/api/character.js
+ * - Backend profile endpoint: backend/api/character.ts
  * - Frontend API wrapper: src/lib/spotify-api.ts -> generateCharacter()
  * - Demo data: src/lib/demo-data.ts
  * - Logout helper: src/lib/spotify-auth.ts

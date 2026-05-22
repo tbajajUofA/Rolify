@@ -7,7 +7,7 @@
  *
  * Cross references:
  * - frontend/src/lib/spotify-api.ts
- * - backend/server.js
+ * - backend/server.ts
  */
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'

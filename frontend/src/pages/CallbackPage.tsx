@@ -3,11 +3,11 @@
  *
  * Purpose:
  * - Reads the authorization code returned by Spotify.
- * - Sends the code to backend/api/auth.js via src/lib/spotify-auth.ts.
+ * - Sends the code to backend/api/auth.ts via src/lib/spotify-auth.ts.
  * - Redirects to the character page after the backend stores tokens.
  *
  * Cross references:
- * - Backend exchange endpoint: backend/api/auth.js
+ * - Backend exchange endpoint: backend/api/auth.ts
  * - OAuth helper: src/lib/spotify-auth.ts -> handleSpotifyCallback()
  */
 import React, { useEffect, useState } from 'react'

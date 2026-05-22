@@ -4,13 +4,13 @@
  * Purpose:
  * - Creates the PKCE verifier/challenge pair.
  * - Redirects the browser to Spotify's authorization screen.
- * - Sends the returned authorization code to backend/api/auth.js for token exchange.
+ * - Sends the returned authorization code to backend/api/auth.ts for token exchange.
  *
  * Cross references:
  * - Login button lives in src/pages/LoginPage.tsx
  * - Callback handler lives in src/pages/CallbackPage.tsx
- * - Backend exchange endpoint: backend/api/auth.js
- * - Backend logout endpoint: backend/api/auth.js
+ * - Backend exchange endpoint: backend/api/auth.ts
+ * - Backend logout endpoint: backend/api/auth.ts
  */
 const AUTH_URL = 'https://accounts.spotify.com/authorize'
 
@@ -69,7 +69,7 @@ export async function handleSpotifyCallback(code: string) {
   const verifier = localStorage.getItem('spotify_code_verifier')
   if (!verifier) throw new Error('Missing PKCE code verifier in localStorage')
 
-  // Send code + verifier to backend/api/auth.js -> POST /api/auth/exchange.
+      // Send code + verifier to backend/api/auth.ts -> POST /api/auth/exchange.
   const res = await fetch('/api/auth/exchange', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

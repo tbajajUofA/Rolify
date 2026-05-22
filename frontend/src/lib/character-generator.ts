@@ -6,7 +6,7 @@
  * - Useful as a reference if the backend-generated character pipeline needs a fallback or rollback.
  *
  * Current status:
- * - The active app flow now uses backend/api/character.js via src/lib/spotify-api.ts.
+ * - The active app flow now uses backend/api/character.ts via src/lib/spotify-api.ts.
  * - CharacterSheetPage.tsx no longer depends on these helpers for the main flow.
  */
 import { AudioFeatures, SpotifyArtist, SpotifyTrack } from '@/types/spotify'

@@ -2,7 +2,7 @@
  * Spotify data types used by the frontend.
  *
  * Purpose:
- * - Keep the frontend aligned with the normalized data returned by backend/api/spotify.js.
+ * - Keep the frontend aligned with the normalized data returned by backend/api/spotify.ts.
  * - Provide type hints for data passed into the old local character helpers and any future UI work.
  */
 export interface SpotifyImage { url: string; height?: number; width?: number }
