@@ -1,4 +1,4 @@
-import type { AudioFeatures, ClusterName, VisualTrack } from "@/lib/types";
+import type { AudioFeatures, ClusterName, Track, VisualTrack } from "@/lib/types";
 
 const CLUSTER_COLORS: Record<ClusterName, string> = {
   "Chill / acoustic": "#1ED760",
@@ -71,7 +71,7 @@ function average(features: AudioFeatures[]) {
   };
 }
 
-export function clusterTracks<T extends { features: AudioFeatures }>(tracks: T[]) {
+export function clusterTracks<T extends Track & { features: AudioFeatures }>(tracks: T[]) {
   let centroids = { ...INITIAL_CENTROIDS };
   let assignments = new Map<T, ClusterName>();
 
@@ -104,6 +104,6 @@ export function clusterTracks<T extends { features: AudioFeatures }>(tracks: T[]
       ...track,
       cluster,
       clusterColor: CLUSTER_COLORS[cluster]
-    } as VisualTrack;
+    };
   });
 }

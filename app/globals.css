@@ -22,9 +22,7 @@ body {
   margin: 0;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 20% 0%, rgba(29, 185, 84, 0.24), transparent 24rem),
-    radial-gradient(circle at 80% 18%, rgba(0, 229, 255, 0.18), transparent 25rem),
-    radial-gradient(circle at 45% 45%, rgba(127, 119, 221, 0.18), transparent 36rem),
+    radial-gradient(circle at 50% 40%, rgba(0, 255, 0, 0.06), transparent 40rem),
     #000000;
 }
 
@@ -56,15 +54,27 @@ canvas {
   }
 
   .panel {
-    @apply border border-white/10 bg-black/58 shadow-[0_24px_90px_rgba(0,0,0,0.5)] backdrop-blur-xl;
+    @apply border border-white/10 bg-black/60 shadow-[0_24px_90px_rgba(0,0,0,0.5)] backdrop-blur-xl;
   }
 
   .readout {
-    @apply font-mono text-xs uppercase tracking-[0.2em] text-white/58;
+    @apply font-mono text-xs uppercase tracking-[0.2em] text-white/60;
   }
 
   .spotify-focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-spotify-neon focus-visible:ring-offset-2 focus-visible:ring-offset-black;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omnitrix-green focus-visible:ring-offset-2 focus-visible:ring-offset-black;
+  }
+
+  .chart-container {
+    @apply relative h-full w-full;
+  }
+
+  .chart-tooltip {
+    @apply pointer-events-none absolute z-50 rounded border border-omnitrix-green/30 bg-black/90 px-3 py-2 font-sans text-xs text-white shadow-omnitrix-glow;
+  }
+
+  .clip-hex {
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   }
 }
 
